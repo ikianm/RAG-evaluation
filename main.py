@@ -64,15 +64,20 @@ class ChromaDB:
             print(f'Error retrieving related documents {str(e)}')
             raise e
         
-class MemoryHandler:
-    def __init__(self):
-        self.messages = []
-        self.llm = ChatOpenAI(
+class LLM:
+    
+    def __init__(self, temperature: float):
+        self.chat_model = ChatOpenAI(
             api_key=os.getenv('OPENROUTER_API_KEY'),
             base_url=os.getenv('OPENROUTER_BASE_URL'),
             model='openai/gpt-3.5-turbo',
-            temperature=0.2
+            temperature=temperature
         )
+        
+class MemoryHandler:
+    def __init__(self):
+        self.messages = []
+        self.llm = LLM(temperature=0.0).chat_model
         
     def append_message(self, message: str): 
         self.messages.append(message)
@@ -111,12 +116,7 @@ class MemoryHandler:
 class RAGSystem:
     
     def __init__(self):
-        self.llm = ChatOpenAI(
-            api_key=os.getenv('OPENROUTER_API_KEY'),
-            base_url=os.getenv('OPENROUTER_BASE_URL'),
-            model='openai/gpt-3.5-turbo',
-            temperature=0.2
-        )
+        self.llm = LLM(temperature=0.3).chat_model
         
     def create_chat_prompt(
         self, input_prompt: str, 
