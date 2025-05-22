@@ -111,7 +111,6 @@ class MemoryHandler:
         
         self.messages = self.messages[:-5]
         self.messages.append(summary)
-        print('SUMMARIZED LAST 5 MESSAGES: ', summary)
 
 class RAGSystem:
     
@@ -119,10 +118,12 @@ class RAGSystem:
         self.llm = LLM(temperature=0.3).chat_model
         
     def create_chat_prompt(
-        self, input_prompt: str, 
+        self, 
+        input_prompt: str, 
         related_documents: list[Document],
         memory: list[str]
         ) -> ChatPromptTemplate:
+        
         related_texts = [doc.page_content for doc in related_documents]
         context = ''.join(related_texts)
         conversation_history = ''.join(memory)
@@ -144,7 +145,11 @@ class RAGSystem:
                 """)
         ])
         
-        return chat_prompt_template.format_messages({'context': context, 'conversation_history': conversation_history,'question': input_prompt})
+        return chat_prompt_template.invoke({
+            'conversation_history': conversation_history,
+            'context': context,
+            'question': input_prompt
+            })
     
     def generate_response(self, chat_prompt_template: ChatPromptTemplate):
         if not self.llm:
@@ -201,3 +206,8 @@ def main():
         
 if __name__ == '__main__':
     main()
+    
+# TODO - Decompose the classes into separate files
+# TODO - Explore LangSmith
+# TODO - Evaluate this RAG using LangSmith
+# TODO - Add Streamlit UI to the project (optional) 
