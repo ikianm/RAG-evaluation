@@ -1,0 +1,4 @@
+.venv
+.env
+text_files
+chroma_data
