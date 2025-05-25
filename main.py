@@ -1,4 +1,4 @@
-from langchain_community.document_loaders import DirectoryLoader, TextLoader
+from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_openai import ChatOpenAI
@@ -14,7 +14,7 @@ load_dotenv()
 class DocumentHandler:
     
     def __init__(self):
-        self.loader = DirectoryLoader('./text_files', glob='**/*.txt', loader_cls=TextLoader)
+        self.loader = DirectoryLoader('./files', glob='**/*.pdf', loader_cls=PyPDFLoader)
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500, chunk_overlap=50,
             separators=['\n\n', '\n', '.', ',', ' ', '']
