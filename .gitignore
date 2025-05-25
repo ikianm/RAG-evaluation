@@ -1,4 +1,6 @@
 .venv
 .env
 text_files
+files
 chroma_data
+__pycache__
