@@ -1,4 +1,4 @@
-from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
+from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_openai import ChatOpenAI
@@ -6,6 +6,7 @@ from langchain_ollama import OllamaEmbeddings
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.documents import Document
+import streamlit as st
 from dotenv import load_dotenv
 import os
 
@@ -14,11 +15,13 @@ load_dotenv()
 class DocumentHandler:
     
     def __init__(self):
-        self.loader = DirectoryLoader('./files', glob='**/*.pdf', loader_cls=PyPDFLoader)
+        self.loader = DirectoryLoader('./files', glob='**/*.txt', loader_cls=TextLoader)
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=500, chunk_overlap=50,
-            separators=['\n\n', '\n', '.', ',', ' ', '']
-        )
+            chunk_size=200, 
+            chunk_overlap=40,
+            separators=["\n\n", "\n", "۔", "؟", "!", " ", ""], 
+            keep_separator=True
+            )
         self.documents = []
             
     def load_documents(self) -> None:
@@ -83,27 +86,29 @@ class MemoryHandler:
         self.messages.append(message)
         
     def summarize_messages(self):
-        summarization_prompt = PromptTemplate.from_template( """**Conversation Summary Task**
-                You are an AI assistant tasked with summarizing a conversation between a user and an AI assistant. 
-                Create a concise yet informative summary that captures:
+        summarization_prompt = PromptTemplate.from_template("""
+            **وظیفه خلاصه‌سازی گفتگو**  
+            شما یک دستیار هوشمند هستید که وظیفه خلاصه‌کردن گفتگوی بین کاربر و دستیار هوشمند را بر عهده دارید.  
+            خلاصه‌ای مختصر اما آموزنده ایجاد کنید که موارد زیر را پوشش دهد:  
 
-                1. The key topics discussed
-                2. Important questions asked by the user
-                3. Key information or answers provided by the AI
-                4. Any decisions made or conclusions reached
-                5. Open questions or unresolved topics (if any)
+            1. **موضوعات کلیدی** مطرح‌شده  
+            2. **سوالات مهم** کاربر  
+            3. **اطلاعات یا پاسخ‌های کلیدی** ارائه‌شده توسط دستیار  
+            4. **تصمیمات یا نتیجه‌گیری‌های** گرفته‌شده (در صورت وجود)  
+            5. **سوالات بی‌پاسخ یا موضوعات حل‌نشده** (اگر وجود دارد)  
 
-                **Guidelines:**
-                - Maintain an objective, third-person perspective
-                - Preserve crucial details needed for future context
-                - Use clear, simple language
-                - Ignore small talk or greetings unless relevant
+            **راهنما:**  
+            - از دیدگاه **بیطرف و سوم‌شخص** بنویسید.  
+            - جزئیات ضروری برای **حفظ زمینه آینده** را حفظ کنید.  
+            - از **زبان ساده و واضح** استفاده کنید.  
+            - **گفتگوهای غیرمرتبط** (مثل احوالپرسی) را نادیده بگیرید، مگر اینکه مهم باشند.  
 
-                **Conversation History:**
-                {conversation_history}
+            **تاریخچه گفتگو:**  
+            {conversation_history}  
 
-                **Summary:**""")
-        
+            **خلاصه:**  
+            """)
+                    
         concatinated_messages = ' '.join(self.messages[-10:])
         
         summarization_chain = summarization_prompt | self.llm | StrOutputParser()
@@ -128,21 +133,21 @@ class RAGSystem:
         context = ''.join(related_texts)
         conversation_history = ''.join(memory)
         chat_prompt_template = ChatPromptTemplate.from_messages([
-            ('system', 'You are a helpful assistant'),
+            ('system', 'شما یک دستیار هوشمند و مفید هستید.'),
             ('user', """
-               You are an AI assistant. Answer the user's question using the information provided in the context and the previous conversation. If the answer cannot be found in either, use your own knowledge to provide a concise and accurate response. Maintain a professional and neutral tone. Avoid unnecessary elaboration or informal language. Do not refer to yourself or the source of your knowledge.
+                شما یک دستیار هوشمند هستید. با استفاده از اطلاعات ارائه‌شده در «متن مرتبط» و «تاریخچه گفتگو»، به سوال کاربر پاسخ دهید. اگر پاسخ در این منابع یافت نشد، از دانش خود برای ارائه پاسخ دقیق و مختصر استفاده کنید. لحن پاسخ باید حرفه‌ای و بیطرف باشد. از توضیحات غیرضروری یا زبان غیررسمی خودداری کنید. به خودتان یا منبع دانشتان اشاره نکنید.
 
-                Conversation history:
+                تاریخچه گفتگو:
                 {conversation_history}
 
-                Context:
+                متن مرتبط:
                 {context}
 
-                User question:
+                سوال کاربر:
                 {question}
-                
-                **Answer:**
-                """)
+
+                **پاسخ:**
+            """)
         ])
         
         return chat_prompt_template.invoke({
@@ -169,12 +174,14 @@ def main():
     chroma_db = ChromaDB()
     print('\nChroma DB initialized!')
     
-    document_handler.load_documents()
-    splitted_documents = document_handler.split_documents()
-    print('\nDocuments loaded!')
+    # document_handler.load_documents()
+    # print('\nDocuments loaded!')
     
-    chroma_db.add_documents(splitted_documents)
-    print('\nDocuments loaded into Vector Store!')
+    # splitted_documents = document_handler.split_documents()
+    # print('\nDocuments splitted!')
+
+    # chroma_db.add_documents(splitted_documents)
+    # print('\nDocuments loaded into Vector Store!')
     
     memory_handler = MemoryHandler()
     print('\nMemory handler initialized!')
@@ -207,7 +214,3 @@ def main():
 if __name__ == '__main__':
     main()
     
-# TODO - Decompose the classes into separate files
-# TODO - Explore LangSmith
-# TODO - Evaluate this RAG using LangSmith
-# TODO - Add Streamlit UI to the project (optional) 
