@@ -39,7 +39,7 @@ rag_system = RAGSystem()
 dataset = []
 
 for query, reference in zip(sample_queries, expected_response):
-    related_documents = chroma_db.get_related_documents(query)
+    related_documents = chroma_db.get_relevant_documents(query)
     retrieved_texts = [doc.page_content for doc in related_documents]
     chat_prompt_template = rag_system.create_chat_prompt(query, related_documents)
     response = rag_system.generate_response(chat_prompt_template)
