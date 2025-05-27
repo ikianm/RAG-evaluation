@@ -28,7 +28,7 @@ class DocumentHandler:
         print('\nSplitting documents into chunks...')
         try:
             splitted_documents = self.text_splitter.split_documents(self.documents)
-            print(f'\nSplitted documents to {len(splitted_documents)} chunks successfully!')
+            print(f'\nSplitted documents into {len(splitted_documents)} chunks successfully!')
             return splitted_documents
         except Exception as e:
             print(f'Error splitting the documents {str(e)}')

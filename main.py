@@ -11,16 +11,15 @@ def main():
     
     chroma_db = ChromaDB()
     
-    document_handler.load_documents()
+    # document_handler.load_documents()
     
-    splitted_documents = document_handler.split_documents()
+    # splitted_documents = document_handler.split_documents()
 
-    chroma_db.add_documents(splitted_documents)
+    # chroma_db.add_documents(splitted_documents)
     
     memory_handler = MemoryHandler()
         
     rag_system = RAGSystem()
-    print('\nRAG System Initialized!')
     print("""
             \nQ&A Bot Initialized!
             (type /exit to end the conversation)
@@ -32,7 +31,7 @@ def main():
             break
         
         relevant_documents = chroma_db.get_relevant_documents(input_prompt)
-        chat_prompt_template = rag_system.create_chat_prompt(input_prompt=input_prompt, related_documents=relevant_documents, memory=memory_handler.messages)
+        chat_prompt_template = rag_system.create_chat_prompt(input_prompt=input_prompt, relevant_documents=relevant_documents, memory=memory_handler.messages)
         response = rag_system.generate_response(chat_prompt_template)
         
         memory_handler.append_message(f'Human Question: {input_prompt}')
