@@ -11,11 +11,11 @@ class RAGSystem:
     def create_chat_prompt(
         self, 
         input_prompt: str, 
-        related_documents: list[Document],
+        relevant_documents: list[Document],
         memory: list[str] = []
         ) -> ChatPromptTemplate:
         
-        related_texts = [doc.page_content for doc in related_documents]
+        related_texts = [doc.page_content for doc in relevant_documents]
         context = ''.join(related_texts)
         conversation_history = ''.join(memory)
         chat_prompt_template = ChatPromptTemplate.from_messages([
