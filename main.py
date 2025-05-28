@@ -24,23 +24,25 @@ def main():
             \nQ&A Bot Initialized!
             (type /exit to end the conversation)
             """)
-    
     while True:
         input_prompt = input('\nAsk a question: ')
         if input_prompt.strip().lower() == '/exit':
             break
         
         relevant_documents = chroma_db.get_relevant_documents(input_prompt)
-        chat_prompt_template = rag_system.create_chat_prompt(input_prompt=input_prompt, relevant_documents=relevant_documents, memory=memory_handler.messages)
+        chat_prompt_template = rag_system.create_chat_prompt(input_prompt=input_prompt, relevant_documents=relevant_documents, memory_messages=memory_handler.messages)
         response = rag_system.generate_response(chat_prompt_template)
         
-        memory_handler.append_message(f'Human Question: {input_prompt}')
-        memory_handler.append_message(f'AI Response: {response}')
-        
-        if len(memory_handler.messages) > 10:
-            memory_handler.summarize_messages()
+        memory_handler.append_messages([
+            {'role': 'user', 'content': input_prompt},
+            {'role': 'assistant', 'content': response}
+        ])
         
         print(f'\nAssistant Response: {response}')
+        
+        if len(memory_handler.messages) > 6:
+            memory_handler.summarize_messages()
+        
         
         
 if __name__ == '__main__':

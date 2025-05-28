@@ -12,27 +12,38 @@ class RAGSystem:
         self, 
         input_prompt: str, 
         relevant_documents: list[Document],
-        memory: list[str] = []
+        memory_messages: list[dict[str, str]]
         ) -> ChatPromptTemplate:
         
         related_texts = [doc.page_content for doc in relevant_documents]
         context = ''.join(related_texts)
-        conversation_history = ''.join(memory)
+        
+        conversation_history = ''.join(
+            [
+                f'\n{message['role']}: {message['content']}'
+                for message in memory_messages
+            ]
+        )
+        
         chat_prompt_template = ChatPromptTemplate.from_messages([
-            ('system', 'شما یک دستیار هوشمند و مفید هستید.'),
             ('user', """
-                شما یک دستیار هوشمند هستید. با استفاده از اطلاعات ارائه‌شده در «متن مرتبط» و «تاریخچه گفتگو»، به سوال کاربر پاسخ دهید. اگر پاسخ در این منابع یافت نشد، از دانش خود برای ارائه پاسخ دقیق و مختصر استفاده کنید. لحن پاسخ باید حرفه‌ای و بیطرف باشد. از توضیحات غیرضروری یا زبان غیررسمی خودداری کنید. به خودتان یا منبع دانشتان اشاره نکنید.
+                Follow these guidelines:
+                If the question is related to the given context (retrieved from the knowledge base), respond strictly based on the provided context.
+                If the question is general or not found in the context, answer using your general knowledge.
+                Always consider the conversation history (previous chat interactions) to maintain coherence and context-awareness.
+                If the question is unclear or insufficient, politely ask for clarification before answering.
+                Keep responses clear, helpful, and friendly.
 
-                تاریخچه گفتگو:
-                {conversation_history}
-
-                متن مرتبط:
+                Context for this query:
                 {context}
 
-                سوال کاربر:
-                {question}
+                Conversation history:
+                {conversation_history}
 
-                **پاسخ:**
+                User's question:
+                {question}
+                
+                **Answer: **
             """)
         ])
         

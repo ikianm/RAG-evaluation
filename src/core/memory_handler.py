@@ -1,15 +1,16 @@
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-
 from .llm import LLM
 
 class MemoryHandler:
     def __init__(self):
-        self.messages = []
+        self.messages = [
+            {'role': 'system', 'content': 'You are an intelligent assistant that answers user questions based on the provided context.'}
+        ]
         self.llm = LLM(temperature=0.0).chat_model
         
-    def append_message(self, message: str): 
-        self.messages.append(message)
+    def append_messages(self, new_messages: list[dict[str, str]]): 
+        self.messages += new_messages
         
     def summarize_messages(self):
         summarization_prompt = PromptTemplate.from_template("""
@@ -35,10 +36,15 @@ class MemoryHandler:
             **خلاصه:**  
             """)
                     
-        concatinated_messages = ' '.join(self.messages[-10:])
+        concatinated_messages = ''.join(
+            [
+                f'\n{message['role']}: {message['content']}.'
+                for message in self.messages[-6:]
+            ]
+        )
         
         summarization_chain = summarization_prompt | self.llm | StrOutputParser()
         summary = summarization_chain.invoke({'conversation_history': concatinated_messages})
         
-        self.messages = self.messages[:-5]
-        self.messages.append(summary)
+        self.messages = self.messages[:-6]
+        self.messages.append({'role': 'assistant', 'content': f'Summary: {summary}'})
