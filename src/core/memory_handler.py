@@ -14,27 +14,15 @@ class MemoryHandler:
         
     def summarize_messages(self):
         summarization_prompt = PromptTemplate.from_template("""
-            **وظیفه خلاصه‌سازی گفتگو**  
-            شما یک دستیار هوشمند هستید که وظیفه خلاصه‌کردن گفتگوی بین کاربر و دستیار هوشمند را بر عهده دارید.  
-            خلاصه‌ای مختصر اما آموزنده ایجاد کنید که موارد زیر را پوشش دهد:  
-
-            1. **موضوعات کلیدی** مطرح‌شده  
-            2. **سوالات مهم** کاربر  
-            3. **اطلاعات یا پاسخ‌های کلیدی** ارائه‌شده توسط دستیار  
-            4. **تصمیمات یا نتیجه‌گیری‌های** گرفته‌شده (در صورت وجود)  
-            5. **سوالات بی‌پاسخ یا موضوعات حل‌نشده** (اگر وجود دارد)  
-
-            **راهنما:**  
-            - از دیدگاه **بیطرف و سوم‌شخص** بنویسید.  
-            - جزئیات ضروری برای **حفظ زمینه آینده** را حفظ کنید.  
-            - از **زبان ساده و واضح** استفاده کنید.  
-            - **گفتگوهای غیرمرتبط** (مثل احوالپرسی) را نادیده بگیرید، مگر اینکه مهم باشند.  
-
-            **تاریخچه گفتگو:**  
-            {conversation_history}  
-
-            **خلاصه:**  
-            """)
+            Summarize this chat concisely in 3rd person, covering:
+            Key topics & questions
+            Main answers provided
+            Any decisions or open issues
+            Skip small talk. Keep it neutral and clear.
+            Chat history:
+            {conversation_history}
+            Summary: 
+            """ )
                     
         concatinated_messages = ''.join(
             [
