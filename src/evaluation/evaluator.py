@@ -12,7 +12,10 @@ import os
 
 load_dotenv(override=True)
 
+logging.basicConfig(level=logging.info)
 logger = logging.getLogger(__name__)
+
+logger.info(f'**Evaluating {os.getenv('LLM_MODEL')}**')
 
 sample_queries = [
     'آیا مدیران و نمایندگان ثبت و مسئولین دفاتر و صاحبان دفاتر اسناد رسمی می‌توانند خارج از محل ماموریت خود انجام وظیفه کنند؟',
@@ -54,7 +57,7 @@ for query, reference in zip(sample_queries, expected_response):
     
 evaluation_dataset = EvaluationDataset.from_list(dataset)
 
-logger.info('Dataset created')
+logger.info('Dataset created!')
 
 embedding = HuggingFaceEmbeddings( 
     model_name=os.getenv('EMBEDDING_MODEL'),
