@@ -12,10 +12,7 @@ import os
 
 load_dotenv(override=True)
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-logger.info(f'**Evaluating {os.getenv('LLM_MODEL')}**')
+print(f'**Evaluating {os.getenv('LLM_MODEL')}**')
 
 sample_queries = [
     'آیا مدیران و نمایندگان ثبت و مسئولین دفاتر و صاحبان دفاتر اسناد رسمی می‌توانند خارج از محل ماموریت خود انجام وظیفه کنند؟',
@@ -43,7 +40,7 @@ rag_system = RAGSystem()
 dataset = []
 
 for query, reference in zip(sample_queries, expected_response):
-    logging.info('Generating response for sample queries...')
+    print('Generating response for sample queries...')
     related_documents = chroma_db.get_relevant_documents(query)
     retrieved_texts = [doc.page_content for doc in related_documents]
     chat_prompt_template = rag_system.create_chat_prompt(query, related_documents)
@@ -57,7 +54,7 @@ for query, reference in zip(sample_queries, expected_response):
     
 evaluation_dataset = EvaluationDataset.from_list(dataset)
 
-logger.info('Dataset created!')
+print('Dataset created!')
 
 embedding = HuggingFaceEmbeddings( 
     model_name=os.getenv('EMBEDDING_MODEL'),
@@ -65,14 +62,14 @@ embedding = HuggingFaceEmbeddings(
     )
 
 llm = ChatOpenAI(
-    model='openai/gpt-3.5-turbo',
-    base_url=os.getenv('LLM_BASE_URL'),
-    api_key=os.getenv('LLM_API_KEY')
+    model=os.getenv('EVALUATOR_LM_MODEL'),
+    base_url=os.getenv('EVALUATOR_LLM_BASE_URL'),
+    api_key=os.getenv('EVALUATOR_LLM_API_KEY')
 )
 
 evaluator_llm = LangchainLLMWrapper(llm)
 
-logger.info('Evaluation started...')
+print('Evaluation started...')
 result = evaluate(
     dataset=evaluation_dataset, 
     llm=evaluator_llm, 
