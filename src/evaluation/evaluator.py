@@ -3,7 +3,7 @@ from ragas import EvaluationDataset, evaluate
 from ragas.llms import LangchainLLMWrapper
 from ragas.metrics import ContextPrecision, LLMContextRecall, NoiseSensitivity, ResponseRelevancy, Faithfulness, FactualCorrectness
 from langchain_huggingface import HuggingFaceEmbeddings
-from sentence_transformers import SentenceTransformer
+from ..core.llm import LLM
 
 from ..core.rag_system import RAGSystem
 from ..core.chroma_db import ChromaDB
@@ -51,18 +51,12 @@ for query, reference in zip(sample_queries, expected_response):
     })
 evaluation_dataset = EvaluationDataset.from_list(dataset)
 
-llm = ChatOpenAI(
-            model='google/gemini-2.5-flash-preview-05-20',
-            api_key=os.getenv('OPENROUTER_API_KEY'),
-            base_url=os.getenv('OPENROUTER_BASE_URL')
-            )
-
 embedding = HuggingFaceEmbeddings( 
     model_name=os.getenv('EMBEDDING_MODEL'),
     model_kwargs={'trust_remote_code': True}
     )
 
-evaluator_llm = LangchainLLMWrapper(llm)
+evaluator_llm = LangchainLLMWrapper(LLM().chat_model)
 
 result = evaluate(
     dataset=evaluation_dataset, 
