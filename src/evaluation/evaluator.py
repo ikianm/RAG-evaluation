@@ -1,17 +1,18 @@
-from langchain_openai import ChatOpenAI
 from ragas import EvaluationDataset, evaluate
 from ragas.llms import LangchainLLMWrapper
 from ragas.metrics import ContextPrecision, LLMContextRecall, NoiseSensitivity, ResponseRelevancy, Faithfulness, FactualCorrectness
 from langchain_huggingface import HuggingFaceEmbeddings
-from ..core.llm import LLM
-
+from langchain_openai import ChatOpenAI
 from ..core.rag_system import RAGSystem
 from ..core.chroma_db import ChromaDB
 
+import logging
 from dotenv import load_dotenv
 import os
 
 load_dotenv(override=True)
+
+logger = logging.getLogger(__name__)
 
 sample_queries = [
     'آیا مدیران و نمایندگان ثبت و مسئولین دفاتر و صاحبان دفاتر اسناد رسمی می‌توانند خارج از محل ماموریت خود انجام وظیفه کنند؟',
@@ -39,6 +40,7 @@ rag_system = RAGSystem()
 dataset = []
 
 for query, reference in zip(sample_queries, expected_response):
+    logging.info('Generating response for sample queries...')
     related_documents = chroma_db.get_relevant_documents(query)
     retrieved_texts = [doc.page_content for doc in related_documents]
     chat_prompt_template = rag_system.create_chat_prompt(query, related_documents)
@@ -49,15 +51,25 @@ for query, reference in zip(sample_queries, expected_response):
         'response': response,
         'reference': reference
     })
+    
 evaluation_dataset = EvaluationDataset.from_list(dataset)
+
+logger.info('Dataset created')
 
 embedding = HuggingFaceEmbeddings( 
     model_name=os.getenv('EMBEDDING_MODEL'),
     model_kwargs={'trust_remote_code': True}
     )
 
-evaluator_llm = LangchainLLMWrapper(LLM(temperature=0.0).chat_model)
+llm = ChatOpenAI(
+    model='openai/gpt-3.5-turbo',
+    base_url=os.getenv('LLM_BASE_URL'),
+    api_key=os.getenv('LLM_API_KEY')
+)
 
+evaluator_llm = LangchainLLMWrapper(llm)
+
+logger.info('Evaluation started...')
 result = evaluate(
     dataset=evaluation_dataset, 
     llm=evaluator_llm, 
