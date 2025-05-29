@@ -56,7 +56,7 @@ embedding = HuggingFaceEmbeddings(
     model_kwargs={'trust_remote_code': True}
     )
 
-evaluator_llm = LangchainLLMWrapper(LLM().chat_model)
+evaluator_llm = LangchainLLMWrapper(LLM(temperature=0.0).chat_model)
 
 result = evaluate(
     dataset=evaluation_dataset, 
