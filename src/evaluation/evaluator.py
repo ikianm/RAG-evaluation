@@ -12,7 +12,7 @@ import os
 
 load_dotenv(override=True)
 
-logging.basicConfig(level=logging.info)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 logger.info(f'**Evaluating {os.getenv('LLM_MODEL')}**')
