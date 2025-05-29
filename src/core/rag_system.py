@@ -12,7 +12,7 @@ class RAGSystem:
         self, 
         input_prompt: str, 
         relevant_documents: list[Document],
-        memory_messages: list[dict[str, str]]
+        memory_messages: list[dict[str, str]] = []
         ) -> ChatPromptTemplate:
         
         related_texts = [doc.page_content for doc in relevant_documents]
