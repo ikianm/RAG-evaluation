@@ -64,7 +64,8 @@ embedding = HuggingFaceEmbeddings(
 llm = ChatOpenAI(
     model=os.getenv('EVALUATOR_LM_MODEL'),
     base_url=os.getenv('EVALUATOR_LLM_BASE_URL'),
-    api_key=os.getenv('EVALUATOR_LLM_API_KEY')
+    api_key=os.getenv('EVALUATOR_LLM_API_KEY'),
+    temperature=0.0
 )
 
 evaluator_llm = LangchainLLMWrapper(llm)
