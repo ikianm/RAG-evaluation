@@ -1,13 +1,12 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.documents import Document
-
 from .llm import LLM
 
 class RAGSystem:
     
     def __init__(self):
-        self.llm = LLM(temperature=0.3).chat_model
-        
+        self.llm = LLM(temperature=0.0).chat_model
+
     def create_chat_prompt(
         self, 
         input_prompt: str, 
