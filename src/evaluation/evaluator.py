@@ -1,12 +1,11 @@
 from ragas import EvaluationDataset, evaluate
 from ragas.llms import LangchainLLMWrapper
-from ragas.metrics import ContextPrecision, LLMContextRecall, NoiseSensitivity, ResponseRelevancy, Faithfulness, FactualCorrectness
+from ragas.metrics import NoiseSensitivity, ResponseRelevancy, Faithfulness, FactualCorrectness
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import ChatOpenAI
 from ..core.rag_system import RAGSystem
 from ..core.chroma_db import ChromaDB
 
-import logging
 from dotenv import load_dotenv
 import os
 
@@ -62,7 +61,7 @@ embedding = HuggingFaceEmbeddings(
     )
 
 llm = ChatOpenAI(
-    model=os.getenv('EVALUATOR_LM_MODEL'),
+    model=os.getenv('EVALUATOR_LLM_MODEL'),
     base_url=os.getenv('EVALUATOR_LLM_BASE_URL'),
     api_key=os.getenv('EVALUATOR_LLM_API_KEY'),
     temperature=0.0
@@ -76,8 +75,6 @@ result = evaluate(
     llm=evaluator_llm, 
     embeddings=embedding, # needed for some metrics like Context Precision
     metrics=[
-        ContextPrecision(),
-        LLMContextRecall(), 
         NoiseSensitivity(),
         ResponseRelevancy(),
         Faithfulness(), 
