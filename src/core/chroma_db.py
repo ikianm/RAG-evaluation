@@ -1,7 +1,6 @@
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
-from .reranker import rerank
 
 import os
 
@@ -18,7 +17,7 @@ class ChromaDB:
                     collection_name='system-data',
                     embedding_function=self.embedding,
                     persist_directory='./chroma_data'
-                ).as_retriever(search_kwargs={'k': 50})
+                ).as_retriever(search_kwargs={'k': 10})
         except Exception as e:
             print(f'Failed to setup ChromaDB {str(e)}')
             

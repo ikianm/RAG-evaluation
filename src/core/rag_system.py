@@ -3,14 +3,17 @@ from langchain_core.documents import Document
 from .llm import LLM
 from .chroma_db import ChromaDB
 from .memory_handler import MemoryHandler
+from .reranker import Reranker
 
 class RAGSystem:
     
     def __init__(self, retriever: ChromaDB, memory_handler: MemoryHandler):
         self.llm = LLM(temperature=0.0).chat_model
         self.retriever = retriever
+        self.reranker = Reranker(k_num=10)
         self.memory_handler = memory_handler
         self.relevant_documents_content = []
+        self.reranked_relevant_documents_content = []
 
     def create_chat_prompt(
         self, 
@@ -30,23 +33,28 @@ class RAGSystem:
         
         chat_prompt_template = ChatPromptTemplate.from_messages([
             ('user', """
-                Follow these guidelines:
-                If the question is related to the given context (retrieved from the knowledge base), respond strictly based on the provided context.
-                If the question is general or not found in the context, answer using your general knowledge.
-                Always consider the conversation history (previous chat interactions) to maintain coherence and context-awareness.
-                If the question is unclear or insufficient, politely ask for clarification before answering.
-                Keep responses clear, helpful, and friendly.
-
-                Context for this query:
-                {context}
-
-                Conversation history:
+                شما یک سامانه هوشمند پاسخ‌گو هستید که به پرسش‌های کاربران بر اساس اطلاعات موجود، زمینه گفتگو و گفت‌وگوهای قبلی پاسخ می‌دهید. وظیفه شما ارائه پاسخ‌هایی دقیق، مرتبط و قابل فهم است.
+                برای تولید پاسخ مناسب، مراحل زیر را رعایت کنید:
+                ۱. ابتدا پرسش کاربر را به‌دقت بررسی و مقصود او را درک کنید.
+                ۲. سپس اطلاعات مرتبطی که از منابع گوناگون به دست آمده‌اند را تحلیل نمایید.
+                ۳. اگر تاریخچه گفتگو میان شما و کاربر وجود دارد، آن را نیز در نظر بگیرید تا پاسخ دقیق‌تری بدهید.
+                ۴. با ترکیب پرسش، اطلاعات زمینه‌ای و تاریخچه مکالمه، پاسخی روشن، خلاصه و مرتبط تولید کنید.
+                نکات مهم:
+                اگر اطلاعات کافی برای پاسخ وجود ندارد، از حدس زدن خودداری کرده و محترمانه اعلام کنید که پاسخ در دسترس نیست.
+                از تکرار مستقیم متن منابع خودداری نمایید؛ اطلاعات را به زبان روان و ساده بازنویسی کنید.
+                لحن شما باید محترمانه، شفاف و رسمی باشد.
+                پاسخ‌ها باید کوتاه، مفید، و دقیق باشند.
+                
+                تاریخچه گفتگو:
                 {conversation_history}
-
-                User's question:
+                
+                اطلاعات مرتبط:
+                {context}
+                
+                سوال کاربر:
                 {question}
                 
-                **Answer: **
+                **پاسخ**
             """)
         ])
         
@@ -62,6 +70,7 @@ class RAGSystem:
             
             relevant_documents = self.retriever.query(prompt)
             self.relevant_documents_content = [doc.page_content for doc in relevant_documents]
+            #self.reranked_relevant_documents_content = self.reranker.rerank(prompt, self.relevant_documents_content)
             prompt_template = self.create_chat_prompt(
                 prompt, 
                 self.relevant_documents_content, 

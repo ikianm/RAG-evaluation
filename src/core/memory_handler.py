@@ -14,14 +14,14 @@ class MemoryHandler:
         
     def summarize_messages(self):
         summarization_prompt = PromptTemplate.from_template("""
-            Summarize this chat concisely in 3rd person, covering:
-            Key topics & questions
-            Main answers provided
-            Any decisions or open issues
-            Skip small talk. Keep it neutral and clear.
-            Chat history:
+            خلاصه‌سازی این گفت‌وگو را به‌صورت دقیق، بی‌طرفانه و در زبان سوم انجام بده. موارد زیر را در خلاصه بگنجان:
+            موضوعات و پرسش‌های اصلی مطرح‌شده
+            پاسخ‌ها و راهکارهای کلیدی ارائه‌شده
+            تصمیم‌گیری‌ها یا مسائل باز و ناتمام
+            از پرداختن به گفتگوهای غیرمهم یا احوال‌پرسی‌ها صرف‌نظر کن. لحن خلاصه باید رسمی، شفاف و دقیق باشد.
+            تاریخچه گفت‌وگو:
             {conversation_history}
-            Summary: 
+            **خلاصه**:
             """ )
                     
         concatinated_messages = ''.join(

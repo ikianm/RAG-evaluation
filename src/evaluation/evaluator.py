@@ -1,6 +1,6 @@
-from ragas import EvaluationDataset, evaluate
+from ragas import EvaluationDataset, evaluate, RunConfig
 from ragas.llms import LangchainLLMWrapper
-from ragas.metrics import NoiseSensitivity, ResponseRelevancy, Faithfulness, FactualCorrectness
+from ragas.metrics import NoiseSensitivity, ResponseRelevancy, Faithfulness, FactualCorrectness, ContextRecall, ContextPrecision
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import ChatOpenAI
 from ..core.rag_system import RAGSystem
@@ -72,10 +72,15 @@ result = evaluate(
     llm=evaluator_llm, 
     embeddings=embedding, # needed for some metrics like Context Precision
     metrics=[
+        ContextPrecision(),
+        ContextRecall(),
         NoiseSensitivity(),
         ResponseRelevancy(),
         Faithfulness(), 
-        FactualCorrectness()
-    ]
+        FactualCorrectness(),
+        
+    ],
+    run_config=RunConfig(timeout=240),
+
 )
 print(result)
