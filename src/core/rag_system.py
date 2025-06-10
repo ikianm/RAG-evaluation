@@ -1,16 +1,13 @@
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.documents import Document
 from .llm import LLM
 from .chroma_db import ChromaDB
 from .memory_handler import MemoryHandler
-from .reranker import Reranker
 
 class RAGSystem:
     
     def __init__(self, retriever: ChromaDB, memory_handler: MemoryHandler):
         self.llm = LLM(temperature=0.0).chat_model
         self.retriever = retriever
-        self.reranker = Reranker(k_num=10)
         self.memory_handler = memory_handler
         self.relevant_documents_content = []
         self.reranked_relevant_documents_content = []
@@ -70,7 +67,6 @@ class RAGSystem:
             
             relevant_documents = self.retriever.query(prompt)
             self.relevant_documents_content = [doc.page_content for doc in relevant_documents]
-            #self.reranked_relevant_documents_content = self.reranker.rerank(prompt, self.relevant_documents_content)
             prompt_template = self.create_chat_prompt(
                 prompt, 
                 self.relevant_documents_content, 
