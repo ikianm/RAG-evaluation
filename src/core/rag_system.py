@@ -67,7 +67,6 @@ class RAGSystem:
                 self.relevant_documents_content, 
                 self.memory_handler.messages
             )
-            print(prompt_template)
             response = self.llm.invoke(prompt_template)
             return response.content
         
