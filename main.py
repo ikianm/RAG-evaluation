@@ -7,34 +7,24 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
         
 def main():
-    document_handler = DocumentHandler()
-    
-    chroma_db = ChromaDB()
-    
-    # document_handler.load_documents()
-    
-    # splitted_documents = document_handler.split_documents()
-
-    # chroma_db.add_documents(splitted_documents)
     
     memory_handler = MemoryHandler()
-        
-    rag_system = RAGSystem()
+    
+    rag_system = RAGSystem(ChromaDB(), memory_handler)
+    
     print("""
             \nQ&A Bot Initialized!
             (type /exit to end the conversation)
             """)
     while True:
-        input_prompt = input('\nAsk a question: ')
-        if input_prompt.strip().lower() == '/exit':
+        prompt = input('\nAsk a question: ')
+        if prompt.strip().lower() == '/exit':
             break
         
-        relevant_documents = chroma_db.get_relevant_documents(input_prompt)
-        chat_prompt_template = rag_system.create_chat_prompt(input_prompt=input_prompt, relevant_documents=relevant_documents, memory_messages=memory_handler.messages)
-        response = rag_system.generate_response(chat_prompt_template)
+        response = rag_system.generate_response(prompt)
         
         memory_handler.append_messages([
-            {'role': 'user', 'content': input_prompt},
+            {'role': 'user', 'content': prompt},
             {'role': 'assistant', 'content': response}
         ])
         

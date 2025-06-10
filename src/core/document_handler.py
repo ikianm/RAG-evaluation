@@ -10,9 +10,8 @@ class DocumentHandler:
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500, 
             chunk_overlap=50,
-            separators=["\n\n", "\n", "۔", "؟", "!", " ", ""], 
-            keep_separator=True
-            )
+            separators = ["\n\n", "\n", ".", "؟", "!", " ",""]            
+        )
         self.documents = []
             
     def load_documents(self) -> None:

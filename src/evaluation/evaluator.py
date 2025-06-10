@@ -5,6 +5,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import ChatOpenAI
 from ..core.rag_system import RAGSystem
 from ..core.chroma_db import ChromaDB
+from ..core.memory_handler import MemoryHandler
 
 from dotenv import load_dotenv
 import os
@@ -33,20 +34,16 @@ expected_response = [
     'قانون اساسی جمهوری اسلامی ایران در دوازده فصل تنظیم گردیده'
 ]
 
-chroma_db = ChromaDB()
-rag_system = RAGSystem()
+rag_system = RAGSystem(retriever=ChromaDB(), memory_handler=MemoryHandler())
 
 dataset = []
 
 for query, reference in zip(sample_queries, expected_response):
     print('Generating response for sample queries...')
-    related_documents = chroma_db.get_relevant_documents(query)
-    retrieved_texts = [doc.page_content for doc in related_documents]
-    chat_prompt_template = rag_system.create_chat_prompt(query, related_documents)
-    response = rag_system.generate_response(chat_prompt_template)
+    response = rag_system.generate_response(query)
     dataset.append({
         'user_input': query,
-        'retrieved_contexts': retrieved_texts,
+        'retrieved_contexts': rag_system.relevant_documents_content,
         'response': response,
         'reference': reference
     })

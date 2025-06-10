@@ -1,23 +1,27 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.documents import Document
 from .llm import LLM
+from .chroma_db import ChromaDB
+from .memory_handler import MemoryHandler
 
 class RAGSystem:
     
-    def __init__(self):
+    def __init__(self, retriever: ChromaDB, memory_handler: MemoryHandler):
         self.llm = LLM(temperature=0.0).chat_model
+        self.retriever = retriever
+        self.memory_handler = memory_handler
+        self.relevant_documents_content = []
 
     def create_chat_prompt(
         self, 
         input_prompt: str, 
-        relevant_documents: list[Document],
+        relevant_documents: list[str],
         memory_messages: list[dict[str, str]] = []
         ) -> ChatPromptTemplate:
         
-        related_texts = [doc.page_content for doc in relevant_documents]
-        context = ''.join(related_texts)
+        context = '\n'.join(relevant_documents)
         
-        conversation_history = ''.join(
+        conversation_history = '\n'.join(
             [
                 f'\n{message['role']}: {message['content']}'
                 for message in memory_messages
@@ -51,13 +55,22 @@ class RAGSystem:
             'context': context,
             'question': input_prompt
             })
-    
-    def generate_response(self, chat_prompt_template: ChatPromptTemplate):
-        if not self.llm:
-            raise ValueError('No initialized LLM found')
+
+        
+    def generate_response(self, prompt: str):
         try:
-            response = self.llm.invoke(chat_prompt_template)
+            
+            relevant_documents = self.retriever.query(prompt)
+            self.relevant_documents_content = [doc.page_content for doc in relevant_documents]
+            prompt_template = self.create_chat_prompt(
+                prompt, 
+                self.relevant_documents_content, 
+                self.memory_handler.messages
+            )
+            print(prompt_template)
+            response = self.llm.invoke(prompt_template)
             return response.content
+        
         except Exception as e:
             print(f'Error generating a response {str(e)}')
             raise e  

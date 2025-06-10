@@ -1,6 +1,7 @@
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
+from .reranker import rerank
 
 import os
 
@@ -17,7 +18,7 @@ class ChromaDB:
                     collection_name='system-data',
                     embedding_function=self.embedding,
                     persist_directory='./chroma_data'
-                ).as_retriever(search_kwargs={'k': 5})
+                ).as_retriever(search_kwargs={'k': 50})
         except Exception as e:
             print(f'Failed to setup ChromaDB {str(e)}')
             
@@ -30,10 +31,10 @@ class ChromaDB:
             print(f'\nError adding documents to vector store {str(e)}')
             raise e
             
-    def get_relevant_documents(self, query: str) -> list[Document]:
+    def query(self, query: str) -> list[Document]:
         try:
             relevant_documents = self.retriever.invoke(query)
             return relevant_documents
         except Exception as e:
-            print(f'Error retrieving related documents {str(e)}')
+            print(f'\nError querying retriever {str(e)}')
             raise e
